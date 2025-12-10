@@ -1,0 +1,18 @@
+# .gitignore standard per Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# VS Code settings
+.vscode/
+
+# Type Checking
+.mypy_cache/
+
+# Testing
+.pytest_cache/
