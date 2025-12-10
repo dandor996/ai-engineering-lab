@@ -4,10 +4,12 @@ from typing import Union, Optional, Any
 from enum import Enum
 from datetime import datetime
 
+# --- Domain Constants ---
 MAX_SYS_BP = 135
 MAX_DIA_BP = 85
 MIN_HEART_RATE = 50
 MAX_HEART_RATE = 100
+
 
 class ExamType(Enum):
     HEART_RATE = "heart_rate"
@@ -46,8 +48,8 @@ class Patient:
     history: list[Exam]
 
 
-# SIMULAZIONE DATABASE (LEGACY DATA DUMP)
-# Un incubo di dizionari annidati senza schema garantito.
+# Mock data representing legacy database export
+# Contains inconsistent types and missing fields to simulate dirty data
 raw_patients_data: list[dict[str, Any]] = [
     {
         "id": "P001",
@@ -62,33 +64,32 @@ raw_patients_data: list[dict[str, Any]] = [
         "details": {"name": "Luigi Verdi", "age": 60},
         "history": [
             {"date": "2023-10-02", "type": "glucose", "value": 95.5},
-            # Nota: qui "value" è un dict, sopra era un int o float. Inconsistenza!
+            # Edge case: 'value' is a dict here, but float/int elsewhere
             {"date": "2023-10-05", "type": "blood_pressure", "value": {"sys": 140, "dia": 90}},
         ]
     },
     {
         "id": "P003",
         "details": {"name": "Anna Bianchi", "age": 30},
-        "history": [] # Nessun dato storico
+        "history": []
     }
 ]
 
 def parse_patient(raw_data: dict[str, Any]) -> Patient:
     """
-    Converts raw dictionary data into a type-safe Patient object.
-    Implements defensive programming to handle missing keys or bad types.
+    Parses raw patient dictionary into a structured Patient object.
+    
+    Handles defensive data extraction:
+    - Returns default values for missing patient details.
+    - Skips malformed or incomplete exams.
+    - Normalizes inconsistent data types.
     """
-    # Estrazione dizionari
     p_id = raw_data.get("id", "NO_ID")
     details = raw_data.get("details", {})
-
-    # Estrazione singoli campi in details
     p_name = details.get("name", "N/A")
     p_age = details.get("age", 0)
 
     clean_history_list: list[Exam] = []
-
-    # Estrazione singoli campi in history
     raw_history_list = raw_data.get("history", [])
 
     for raw_exam in raw_history_list:
@@ -118,11 +119,12 @@ def parse_patient(raw_data: dict[str, Any]) -> Patient:
                         dia = raw_value.get("dia", 0)
                         value = BloodPressure(sys=sys, dia=dia)
                     except (ValueError, TypeError):
-                        print(f"Valor pressione non numerici: {raw_value}")
+                        print(f"Skipping invalid BP values: {raw_value}")
                 else:
-                    print(f"Dati pressione incompleti (mancano chiavi): {raw_value}")
+                    print(f"Skipping incomplete BP record: {raw_value}")
 
         elif exam_type == ExamType.HEART_RATE:
+            # Handle cases where value might be string or float
             try:
                 hr = int(raw_value)
                 value = HeartRate(val=hr)
@@ -143,58 +145,52 @@ def parse_patient(raw_data: dict[str, Any]) -> Patient:
 
 def analyze_patient_health(patients: list[Patient]) -> list[str]:
     """
-    Analyzes patient health using strongly typed objects.
-    Uses type narrowing (isinstance) to access specific exam values safely.
+    Generates health alerts based on patient history.
+    
+    Uses Type Narrowing (isinstance) to safely access the specific attributes
+    of the polymorphic 'value' field (BloodPressure, HeartRate, etc.).
     """
     alerts = []
 
     for patient in patients:
-        p_id = patient.id
-        name = patient.name
-        exams = patient.history
-
-        print(f"Analyzing {name} ({p_id})...")
-
+        print(f"Analyzing {patient.name} ({patient.id})...")
         sys_pressures: list[int] = []
 
-        for exam in exams:
-            # Logica condizionale basata su stringhe (Error Prone)
+        for exam in patient.history:
+            # Type Narrowing allows safe access to specific dataclass fields
             if isinstance(exam.value, BloodPressure):
                 bp = exam.value
                 sys = bp.sys
                 dia = bp.dia
 
                 if sys > MAX_SYS_BP or dia > MAX_DIA_BP:
-                    alerts.append(f"ALLERTA IPERTENSIONE: {name} - {sys}/{dia}")
-
+                    alerts.append(f"HYPERTENSION ALERT: {patient.name} - {bp.sys}/{bp.dia}")
                 sys_pressures.append(sys)
 
             elif isinstance(exam.value, HeartRate):
-                # Qui assumiamo che value sia un int
                 hr = exam.value.val
                 if hr > MAX_HEART_RATE or hr < MIN_HEART_RATE:
-                    alerts.append(f"ALLERTA BATTITO: {name} - {hr} bpm")
+                    alerts.append(f"ABNORMAL HR ALERT: {patient.name} - {hr} bpm")
 
         if sys_pressures:
             avg_sys = statistics.mean(sys_pressures)
-            print(f"  -> Media Pressione Sistolica: {avg_sys:.1f}")
+            print(f"  -> Avg Systolic BP: {avg_sys:.1f}")
         else:
-            print("  -> Nessun dato pressorio.")
+            print("  -> No BP data available.")
 
     return alerts
 
 
-# MAIN DI ESECUZIONE
 if __name__ == "__main__":
-    # Transform: Raw Dicts -> Typed Objects
+    # Transformation (ETL)
     clean_patients_data: list[Patient] = []
     for raw_p in raw_patients_data:
         clean_patients_data.append(parse_patient(raw_p))
 
-    # Analyze: Use Typed Objects
+    # Analysis
     risk_report = analyze_patient_health(clean_patients_data)
 
-    # Report
-    print("\n--- REPORT GENERATO ---")
+    # Reporting
+    print("\n--- HEALTH REPORT ---")
     for alert in risk_report:
         print(alert)
