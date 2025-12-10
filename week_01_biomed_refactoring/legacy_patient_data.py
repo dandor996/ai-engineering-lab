@@ -4,6 +4,11 @@ from typing import Union, Optional, Any
 from enum import Enum
 from datetime import datetime
 
+MAX_SYS_BP = 135
+MAX_DIA_BP = 85
+MIN_HEART_RATE = 50
+MAX_HEART_RATE = 100
+
 class ExamType(Enum):
     HEART_RATE = "heart_rate"
     BLOOD_PRESSURE = "blood_pressure"
@@ -43,7 +48,7 @@ class Patient:
 
 # SIMULAZIONE DATABASE (LEGACY DATA DUMP)
 # Un incubo di dizionari annidati senza schema garantito.
-raw_patients_data = [
+raw_patients_data: list[dict[str, Any]] = [
     {
         "id": "P001",
         "details": {"name": "Mario Rossi", "age": 45},
@@ -136,41 +141,39 @@ def parse_patient(raw_data: dict[str, Any]) -> Patient:
 
     return Patient(id=p_id, name=p_name, age=p_age, history=clean_history_list)
 
-def analyze_patient_health(data):
+def analyze_patient_health(patients: list[Patient]) -> list[str]:
     """
-    LEGACY FUNCTION: Still uses dictionary access.
-    Will be refactored in next step to use Patient objects.
+    Analyzes patient health using strongly typed objects.
+    Uses type narrowing (isinstance) to access specific exam values safely.
     """
     alerts = []
-    
-    for patient in data:
-        p_id = patient["id"]
-        # Accesso fragile: se manca "details" o "name", crasha.
-        name = patient["details"]["name"] 
-        exams = patient.get("history", [])
-        
+
+    for patient in patients:
+        p_id = patient.id
+        name = patient.name
+        exams = patient.history
+
         print(f"Analyzing {name} ({p_id})...")
-        
-        sys_pressures = []
-        
+
+        sys_pressures: list[int] = []
+
         for exam in exams:
             # Logica condizionale basata su stringhe (Error Prone)
-            if exam["type"] == "blood_pressure":
-                # Qui assumiamo che value sia un dict. Se fosse None? Crash.
-                bp = exam["value"]
-                sys = bp["sys"]
-                dia = bp["dia"]
-                
-                if sys > 135 or dia > 85:
-                    alerts.append(f"ALERTA IPERTENSIONE: {name} - {sys}/{dia}")
-                
+            if isinstance(exam.value, BloodPressure):
+                bp = exam.value
+                sys = bp.sys
+                dia = bp.dia
+
+                if sys > MAX_SYS_BP or dia > MAX_DIA_BP:
+                    alerts.append(f"ALLERTA IPERTENSIONE: {name} - {sys}/{dia}")
+
                 sys_pressures.append(sys)
-            
-            elif exam["type"] == "heart_rate":
+
+            elif isinstance(exam.value, HeartRate):
                 # Qui assumiamo che value sia un int
-                hr = exam["value"]
-                if hr > 100 or hr < 50:
-                    alerts.append(f"ALERTA BATTITO: {name} - {hr} bpm")
+                hr = exam.value.val
+                if hr > MAX_HEART_RATE or hr < MIN_HEART_RATE:
+                    alerts.append(f"ALLERTA BATTITO: {name} - {hr} bpm")
 
         if sys_pressures:
             avg_sys = statistics.mean(sys_pressures)
@@ -180,9 +183,18 @@ def analyze_patient_health(data):
 
     return alerts
 
+
 # MAIN DI ESECUZIONE
 if __name__ == "__main__":
-    risk_report = analyze_patient_health(raw_patients_data)
+    # Transform: Raw Dicts -> Typed Objects
+    clean_patients_data: list[Patient] = []
+    for raw_p in raw_patients_data:
+        clean_patients_data.append(parse_patient(raw_p))
+
+    # Analyze: Use Typed Objects
+    risk_report = analyze_patient_health(clean_patients_data)
+
+    # Report
     print("\n--- REPORT GENERATO ---")
     for alert in risk_report:
         print(alert)
