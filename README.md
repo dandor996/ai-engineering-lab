@@ -1,4 +1,4 @@
-# 🧠 AI Engineering Path - Sandbox
+# 🧪 Applied AI Engineering Lab
 
 Questo repository documenta il mio percorso di studio intensivo e pratico per diventare AI Engineer.
 Contiene esercizi, refactoring di codice legacy, e implementazioni di design patterns.
