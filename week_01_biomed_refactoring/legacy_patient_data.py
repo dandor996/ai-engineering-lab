@@ -1,4 +1,45 @@
 import statistics
+from dataclasses import dataclass
+from typing import Union, Optional, Any
+from enum import Enum
+from datetime import datetime
+
+class ExamType(Enum):
+    HEART_RATE = "heart_rate"
+    BLOOD_PRESSURE = "blood_pressure"
+    GLUCOSE = "glucose"
+
+
+@dataclass
+class BloodPressure:
+    sys: int
+    dia: int
+
+
+@dataclass
+class HeartRate:
+    val: int
+
+
+@dataclass
+class Glucose:
+    val: float
+
+
+@dataclass
+class Exam:
+    date: datetime
+    type: ExamType
+    value: Union[BloodPressure, HeartRate, Glucose]
+
+
+@dataclass
+class Patient:
+    id: str
+    name: str
+    age: int
+    history: list[Exam]
+
 
 # SIMULAZIONE DATABASE (LEGACY DATA DUMP)
 # Un incubo di dizionari annidati senza schema garantito.
