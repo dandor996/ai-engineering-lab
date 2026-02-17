@@ -16,3 +16,6 @@ env/
 
 # Testing
 .pytest_cache/
+
+# Folder not needed
+one_shot_example/
