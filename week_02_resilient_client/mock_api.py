@@ -7,7 +7,7 @@ class NetworkError(Exception):
 class RateLimitError(Exception):
     pass
 
-def fake_data_fetch(endpoint: str):
+def fake_data_fetch(endpoint: str) -> dict:
     """Simula una chiamata API instabile."""
     print(f"  -> Tentativo connessione a {endpoint}...")
     time.sleep(0.5)  # Latenza
