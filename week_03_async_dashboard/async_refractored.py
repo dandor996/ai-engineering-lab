@@ -49,19 +49,22 @@ async def build_dashboard():
     print("🚀 START: Patient Dashboard Generation (Asynchronous)")
     start_time = time.perf_counter()
 
-    patient_ids = list(range(1, 11))
+    patient_ids = list(range(1, 11)) + [9999]  # 10 valid patients + 1 invalid to test error handling
 
     async with httpx.AsyncClient() as client:
         tasks = [get_single_patient_data(client, pid) for pid in patient_ids]
 
-        dashboard = await asyncio.gather(*tasks)
+        dashboard = await asyncio.gather(*tasks, return_exceptions=True)
 
         end_time = time.perf_counter()
 
     print("\n📊 --- DASHBOARD GENERATED ---")
     for entry in dashboard:
-        print(f"👤 {entry['name']}: {entry['completed_exams']}/{entry['total_exams']} exams completed")
-
+        if isinstance(entry, Exception):
+            print(f"❌ Error fetching data: {entry}")
+        else:
+            print(f"👤 {entry['name']}: {entry['completed_exams']}/{entry['total_exams']} exams completed")
+        
     elapsed = end_time - start_time
     print(f"\n⏱️ Total time (asynchronous): {elapsed:.2f} seconds")
 
