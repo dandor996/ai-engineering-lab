@@ -9,4 +9,4 @@ Contiene esercizi, refactoring di codice legacy, e implementazioni di design pat
 * **Week 03:** Async Programming - Coroutines, Async/Await, Concurrent I/O Operations & Performance Optimization.
 
 ⚠️ **Disclaimer:**
-Questo è un "Learning Repo". Il codice qui contenuto rappresenta istantanee del mio apprendimento e potrebbe contenere esperimenti o implementazioni didattiche.
+Questo è un "Learning Repo". Il codice qui contenuto rappresenta istantanee del mio apprendimento e contiene esperimenti o implementazioni didattiche.
