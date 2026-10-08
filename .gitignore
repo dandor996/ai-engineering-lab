@@ -19,3 +19,7 @@ env/
 
 # Folder not needed
 one_shot_example/
+
+ledger.md
+AGENTS.md
+.*
