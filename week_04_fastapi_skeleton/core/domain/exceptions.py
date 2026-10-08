@@ -9,4 +9,7 @@ class InvalidPredictionError(DomainException):
 class InvalidFeatureError(DomainException):
     """Exception for invalid feature values"""
     pass
-    
+
+class PredictionTimeoutError(DomainException):
+    """Exception for prediction timeout errors"""
+    pass
