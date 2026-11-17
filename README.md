@@ -7,6 +7,7 @@ Contiene esercizi, refactoring di codice legacy, e implementazioni di design pat
 * **Week 01:** Python Foundations, Typing, Data Classes & Defensive Programming.
 * **Week 02:** Clean Code Principles - Decorator Pattern, Resilient Client Implementation, Retry & Logging Patterns.
 * **Week 03:** Async Programming - Coroutines, Async/Await, Concurrent I/O Operations & Performance Optimization.
+* **Week 04:** Clean Architecture & Ports and Adapters - FastAPI Microservice Skeleton, Concurrency Orchestration (asyncio.to_thread / wait_for), Stateless JWT Authentication, Boundary Error Handling & Test Seams (app.dependency_overrides).
 
 ⚠️ **Disclaimer:**
 Questo è un "Learning Repo". Il codice qui contenuto rappresenta istantanee del mio apprendimento e contiene esperimenti o implementazioni didattiche.
